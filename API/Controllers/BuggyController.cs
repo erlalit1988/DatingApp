@@ -16,7 +16,7 @@ namespace API.Controllers
         [HttpGet("not-found")]
         public ActionResult<AppUser> GetNotFound()
         {
-            var thing = dataContext.AppUsers.Find(-1);
+            var thing = dataContext.Users.Find(-1);
 
             if (thing == null) return NotFound();
 
@@ -25,7 +25,7 @@ namespace API.Controllers
         [HttpGet("server-error")]
         public ActionResult<AppUser> GetServerError()
         {
-            var thing = dataContext.AppUsers.Find(-1)?? throw new Exception("A bad thing has happed");
+            var thing = dataContext.Users.Find(-1)?? throw new Exception("A bad thing has happed");
             return thing;
         }
         [HttpGet("bad-request")]
@@ -34,6 +34,5 @@ namespace API.Controllers
             return BadRequest("This was not a good request");
         }
         
-
     }
 }

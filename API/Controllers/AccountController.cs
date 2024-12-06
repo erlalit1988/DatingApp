@@ -17,22 +17,26 @@ namespace API.Controllers
             if (await UserExists(registerDto.Username))
                 return BadRequest("UserName is already exists");
 
-            using var hmac=new HMACSHA512();
-            var user = new AppUser
-            {
-                UserName = registerDto.Username,
-                PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-                PasswordSalt = hmac.Key
-            };
-            dataContext.AppUsers.Add(user);
-            await dataContext.SaveChangesAsync();
+            return Ok();
+            //using var hmac=new HMACSHA512();
+            //var user = new AppUser
+            //{
+            //    UserName = registerDto.Username,
+            //    PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
+            //    PasswordSalt = hmac.Key
+            //};
+            //dataContext.AppUsers.Add(user);
+            //await dataContext.SaveChangesAsync();
 
-            return Ok(new UserDto { UserName=user.UserName, Token=tokenService.CreateToken(user)});
+            //return Ok(new UserDto
+            //{
+            //   UserName=user.UserName,
+            //   Token=tokenService.CreateToken(user)});
         }
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
         {
-            var user = await dataContext.AppUsers.FirstOrDefaultAsync(x => x.UserName.ToLower() == loginDto.Username.ToLower());
+            var user = await dataContext.Users.FirstOrDefaultAsync(x => x.UserName.ToLower() == loginDto.Username.ToLower());
             
             if (user == null) return Unauthorized("Invalid username");
 
@@ -49,7 +53,7 @@ namespace API.Controllers
         
         private async Task<bool> UserExists(string username)
         {
-            return await dataContext.AppUsers.AnyAsync(x=>x.UserName.ToLower() == username.ToLower());
+            return await dataContext.Users.AnyAsync(x=>x.UserName.ToLower() == username.ToLower());
         }
     }
 }
