@@ -6,6 +6,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { TitleCasePipe } from '@angular/common';
 @Component({
+    standalone:true,
     selector: 'app-nav',
     imports: [FormsModule, BsDropdownModule, RouterLink, RouterLinkActive, TitleCasePipe],
     templateUrl: './nav.component.html',

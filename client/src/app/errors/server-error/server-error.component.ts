@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
 @Component({
+    standalone: true,
     selector: 'app-server-error',
     imports: [],
     templateUrl: './server-error.component.html',

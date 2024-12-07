@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
 @Component({
+    standalone: true,
     selector: 'app-test-errors',
     imports: [],
     templateUrl: './test-errors.component.html',

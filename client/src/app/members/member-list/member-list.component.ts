@@ -4,6 +4,7 @@ import { Member } from '../../_models/member';
 import { MemberCardComponent } from '../member-card/member-card.component';
 
 @Component({
+  standalone: true,
     selector: 'app-member-list',
     imports: [MemberCardComponent],
     templateUrl: './member-list.component.html',

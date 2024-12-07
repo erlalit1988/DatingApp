@@ -3,6 +3,7 @@ import { Member } from '../../_models/member';
 import { RouterLink } from '@angular/router';
 
 @Component({
+    standalone: true,
     selector: 'app-member-card',
     imports: [RouterLink],
     templateUrl: './member-card.component.html',
