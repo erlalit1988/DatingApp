@@ -2,6 +2,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Interfaces;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
@@ -9,7 +10,7 @@ using System.Text;
 
 namespace API.Controllers
 {
-    public class AccountController(DataContext dataContext,ITokenService tokenService): BaseApiController
+    public class AccountController(DataContext dataContext,ITokenService tokenService, IMapper mapper): BaseApiController
     {
         [HttpPost("register")] //account/register
         public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
@@ -17,21 +18,23 @@ namespace API.Controllers
             if (await UserExists(registerDto.Username))
                 return BadRequest("UserName is already exists");
 
-            return Ok();
-            //using var hmac=new HMACSHA512();
-            //var user = new AppUser
-            //{
-            //    UserName = registerDto.Username,
-            //    PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-            //    PasswordSalt = hmac.Key
-            //};
-            //dataContext.AppUsers.Add(user);
-            //await dataContext.SaveChangesAsync();
+            using var hmac=new HMACSHA512();
 
-            //return Ok(new UserDto
-            //{
-            //   UserName=user.UserName,
-            //   Token=tokenService.CreateToken(user)});
+            var user =mapper.Map<AppUser>(registerDto);
+
+            user.UserName= registerDto.Username.ToLower();
+            user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
+            user.PasswordSalt = hmac.Key;
+            
+            dataContext.Users.Add(user);
+            await dataContext.SaveChangesAsync();
+
+            return Ok(new UserDto
+            {
+               UserName=user.UserName,
+               Token=tokenService.CreateToken(user),
+               KnownAs=user.KnownAs
+            });
         }
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
@@ -54,6 +57,7 @@ namespace API.Controllers
             return Ok(new UserDto 
             {
                 UserName=user.UserName, 
+                KnownAs=user.KnownAs,
                 Token=tokenService.CreateToken(user),
                 PhotoUrl=user.Photos.FirstOrDefault(x=>x.IsMain)?.Url
             });
