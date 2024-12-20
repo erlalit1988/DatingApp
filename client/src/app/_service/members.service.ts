@@ -18,26 +18,26 @@ export class MembersService {
   baseUrl= environment.apiUrl;
   paginatedResult = signal<PaginatedResult<Member[]> | null>(null);
   memberCache =new Map();
-  //user = this.accountService.currentUser();
- // userParams = model<UserParams>?.(new UserParams(this.user));
+  user = this.accountService.currentUser();
+  userParams = model<UserParams>?.(new UserParams(this.user));
 
-  //resetUserParams() {
-//this.userParams.set(new UserParams(this.user));
- // }
+  resetUserParams() {
+      this.userParams.set(new UserParams(this.user));
+  }
 
-  getMembers(userParams: UserParams) {
-    const response= this.memberCache.get(Object.values(userParams).join('-'));   
+  getMembers() {
+    const response= this.memberCache.get(Object.values(this.userParams()).join('-'));   
     if(response) return this.setPaginatedResponse(response);
-    let params = this.setPaginationHeaders(userParams.pageNumber, userParams.pageSize);
+    let params = this.setPaginationHeaders(this.userParams().pageNumber, this.userParams().pageSize);
 
-    params = params.append('minAge', userParams.minAge);
-    params = params.append('maxAge', userParams.maxAge);
-    params = params.append('Gender', userParams.gender);
-    params = params.append('orderBy', userParams.orderBy);
+    params = params.append('minAge', this.userParams().minAge);
+    params = params.append('maxAge', this.userParams().maxAge);
+    params = params.append('Gender', this.userParams().gender);
+    params = params.append('orderBy', this.userParams().orderBy);
     return this.http.get<Member[]>(this.baseUrl + 'users', {observe: 'response', params}).subscribe({
       next: response => {
         this.setPaginatedResponse(response);
-        this.memberCache.set(Object.values(userParams).join('-'), response)
+        this.memberCache.set(Object.values(this.userParams()).join('-'), response)
       }
     })
   }
