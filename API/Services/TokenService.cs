@@ -19,7 +19,8 @@ namespace API.Services
             //claims
             var claims = new List<Claim>
             {
-                new(ClaimTypes.NameIdentifier, user.UserName)
+                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new(ClaimTypes.Name, user.UserName)
             };
             var cerds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
             var tokensDescriptor = new SecurityTokenDescriptor
