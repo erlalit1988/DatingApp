@@ -23,16 +23,16 @@
             </div>
             <div class="d-flex mx-2">
                 <label class="col-form-label">Show: </label>
-                <select name="gender" 
-                 style="width: 130px;"
-                 class="form-select ms-1" 
-                 [(ngModel)]="userParams.gender">
-                 @for (gender of genderList; track gender.value) {
+                <select name="gender" style="width: 130px;" 
+                class="form-select ms-1"
+                [(ngModel)]="memberService.userParams().gender"
+            >
+                @for (gender of genderList; track gender.value) {
                     <option [value]="gender.value">
                         {{gender.display}}
                     </option>
-                    }
-                </select>
+                }
+            </select>
             </div>
             <button 
             class="btn btn-primary ms-1" 
