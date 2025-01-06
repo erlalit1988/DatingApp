@@ -26,9 +26,6 @@ namespace API.SignalR
           var isOffline =  await tracker.UserDisconnected(Context.User.GetUserName(), Context.ConnectionId);
           if(isOffline)  await Clients.Others.SendAsync("UserIsOffline", Context.User?.GetUserName());
 
-            //var currentUsers = await tracker.GetOnlineUsers();
-            //await Clients.All.SendAsync("GetOnlineUsers", currentUsers);
-
             await base.OnDisconnectedAsync(exception);
         }
     }
