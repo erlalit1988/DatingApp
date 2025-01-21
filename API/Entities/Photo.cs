@@ -10,6 +10,7 @@ namespace API.Entities
         public required string Url { get; set; }
         public bool IsMain { get; set; }
         public string? PublicId { get; set; }
+        public bool IsApproved { get; set; }
         //Navigation prop
         public int AppUserId { get; set; }
         public AppUser AppUser { get; set; } = null!;

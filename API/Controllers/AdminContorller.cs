@@ -1,4 +1,6 @@
-﻿using API.Entities;
+﻿using API.Data;
+using API.Entities;
+using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
-    public class AdminController(UserManager<AppUser> userManager): BaseApiController
+    public class AdminController(UserManager<AppUser> userManager,
+        IUnitOfWork unitOfWork, IPhotoService photoService) : BaseApiController
     {
         [Authorize(Policy = "RequiredAdminRole")]
         [HttpGet("users-with-roles")]
@@ -48,10 +51,55 @@ namespace API.Controllers
 
         [Authorize(Policy = "ModeratePhotoRole")]
         [HttpGet("photo-to-moderator")]
-        public ActionResult GetPhotoForModeration()
+        public async Task<ActionResult> GetPhotoForModeration()
         {
-            return Ok("Only admin or Moderator can see this");
+            var photos = await unitOfWork.PhotoRepository.GetUnapprovedPhoto();
+            return Ok(photos);
         }
 
+        [Authorize(Policy = "ModeratePhotoRole")]
+        [HttpPost("approve-photo/{photoId}")]
+        public async Task<ActionResult> ApprovePhoto(int photoId)
+        {
+            var photo = await unitOfWork.PhotoRepository.GetPhotoById(photoId);
+            
+            if (photo == null) return BadRequest("Could not get photo from db");
+           
+            photo.IsApproved = true;
+
+            var user = await unitOfWork.UserRepository.GetUserByPhotoId(photoId);
+
+            if (user == null) return BadRequest("Could not get user from db");
+
+            if(!user.Photos.Any(x=>x.IsMain)) photo.IsMain = true;
+
+            await unitOfWork.Complete();
+            return Ok();
+        }
+
+        [Authorize(Policy = "ModeratePhotoRole")]
+        [HttpPost("reject-photo/{photoId}")]
+        public async Task<ActionResult> RejectPhoto(int photoId)
+        {
+            var photo = await unitOfWork.PhotoRepository.GetPhotoById(photoId);
+            if (photo == null) return BadRequest("Could not get photo from db");
+            
+            if(photo.PublicId !=null)
+            {
+                var result =await photoService.DeletePhotoAsync(photo.PublicId);
+
+                if(result.Result == "ok")
+                {
+                    unitOfWork.PhotoRepository.RemovePhoto(photo);
+                }
+            }
+            else
+            {
+                unitOfWork.PhotoRepository.RemovePhoto(photo);
+            }
+            await unitOfWork.Complete();
+
+            return Ok();
+        }
     }
 }

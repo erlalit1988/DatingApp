@@ -25,7 +25,8 @@ namespace API.Controllers
         [HttpGet("{username}")]
         public async Task<ActionResult<MemberDto>> GetUser(string username)
         {
-            var user = await unitOfWork.UserRepository.GetMemberAsync(username);
+            var currentUsername = User.GetUserName();
+            var user = await unitOfWork.UserRepository.GetMemberAsync(username, isCurrentUser: currentUsername == username);
 
             if (user == null) return NotFound();
 
@@ -60,10 +61,8 @@ namespace API.Controllers
                 Url = result.SecureUrl.AbsoluteUri,
                 PublicId = result.PublicId
             };
+             user.Photos.Add(photo);
 
-            if (user.Photos.Count == 0) photo.IsMain = true;
-
-            user.Photos.Add(photo);
             if(await unitOfWork.Complete()) 
                 return CreatedAtAction(nameof(GetUser), 
                     new { username = user.UserName}, mapper.Map<PhotoDto>(photo));
@@ -97,7 +96,7 @@ namespace API.Controllers
 
             if (user == null) return BadRequest("User not found");
 
-            var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
+            var photo = await unitOfWork.PhotoRepository.GetPhotoById(photoId);
 
             if (photo == null || photo.IsMain) return BadRequest("This photo cannot be deleted");
 

@@ -5,7 +5,6 @@ using API.Middleware;
 using API.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,12 +25,18 @@ option.AllowAnyHeader()
 .AllowAnyMethod()
 .AllowCredentials()
 .WithOrigins("http://localhost:4200", "https://localhost:4200"));
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.MapControllers();
 app.MapHub<PresenceHub>("hubs/presence");
 app.MapHub<MessageHub>("hubs/message");
+app.MapFallbackToController("Index", "Fallback");
+
 using var scope= app.Services.CreateScope();
 var services=scope.ServiceProvider;
 try
@@ -39,10 +44,9 @@ try
     var context = services.GetRequiredService<DataContext>();
     var userManager = services.GetRequiredService<UserManager<AppUser>>();
     var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
-    var options = app.Services.GetRequiredService<IOptions<SeedUsersPassword>>();
     await context.Database.MigrateAsync();
     await context.Database.ExecuteSqlRawAsync("DELETE FROM [Connections]");
-    await Seed.SeedUsers(userManager, roleManager, options);
+    await Seed.SeedUsers(userManager, roleManager);
 }
 catch (Exception ex)
 {

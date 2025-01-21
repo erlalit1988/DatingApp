@@ -1,7 +1,6 @@
 ﻿using API.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace API.Data
@@ -9,7 +8,7 @@ namespace API.Data
     public class Seed
     {
         public static async Task SeedUsers(UserManager<AppUser> userManager,
-            RoleManager<AppRole> roleManager, IOptions<SeedUsersPassword> appOptions)
+            RoleManager<AppRole> roleManager)
         {
             if (await userManager.Users.AnyAsync()) return;
 
@@ -33,8 +32,9 @@ namespace API.Data
             }
             foreach (var user in users)
             {
+                 user.Photos.First().IsApproved = true;
                  user.UserName = user.UserName!.ToLower();
-                 await userManager.CreateAsync(user, appOptions.Value.UserPassword);
+                 await userManager.CreateAsync(user,"Pa$$w0rd");
                  await userManager.AddToRoleAsync(user, "Member");
             }
 
@@ -46,7 +46,7 @@ namespace API.Data
                 City = "",
                 Country = ""
             };
-            await userManager.CreateAsync(admin, appOptions.Value.AdminUserPassword);
+            await userManager.CreateAsync(admin, "Pa$$w0rd");
             await userManager.AddToRolesAsync(admin, ["Admin", "Moderator"]);
         }
     }
